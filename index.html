@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioSyn-AGI — Research Demo Platform</title>
+<meta name="description" content="Interactive professional demo for the BioSyn-AGI four-layer bio-synthetic AGI framework — power, memory, latency benchmarks and deployment map.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1B2E6B; --teal: #0077B6; --green: #1D7A5F;
+  --bg: #0D1117; --surface: #161B22; --surface2: #21262D;
+  --text: #E6EDF3; --text-muted: #8B949E; --border: #30363D;
+  --accent-navy: #2D4491; --accent-teal: #0096D6; --accent-green: #24996E;
+  --radius: 6px; --transition: 180ms ease;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+a { color: var(--teal); text-decoration: none; }
+h1 { font-size: 1.75rem; font-weight: 600; letter-spacing: -.02em; }
+h2 { font-size: 1.2rem; font-weight: 600; letter-spacing: -.01em; margin-bottom: .75rem; }
+h3 { font-size: .95rem; font-weight: 600; color: var(--teal); }
+/* NAV */
+nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: .75rem 2rem; display: flex; align-items: center; gap: 1.5rem; position: sticky; top: 0; z-index: 100; }
+.nav-brand { font-weight: 600; font-size: .95rem; color: var(--text); letter-spacing: -.01em; }
+.nav-brand span { color: var(--teal); }
+.nav-links { display: flex; gap: .25rem; margin-left: auto; }
+.nav-links a { font-size: .8rem; color: var(--text-muted); padding: .35rem .7rem; border-radius: var(--radius); transition: var(--transition); }
+.nav-links a:hover, .nav-links a.active { color: var(--text); background: var(--surface2); }
+/* LAYOUT */
+main { max-width: 1180px; margin: 0 auto; padding: 2rem 1.5rem; }
+section { margin-bottom: 3rem; scroll-margin-top: 4rem; }
+.section-label { font-size: .7rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: .5rem; }
+/* CARDS */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.card + .card { margin-top: .75rem; }
+/* GRID */
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media(max-width: 860px) { .grid-4 { grid-template-columns: 1fr 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+@media(max-width: 480px) { .grid-4 { grid-template-columns: 1fr; } }
+/* METRIC CARD */
+.metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
+.metric-value { font-size: 1.6rem; font-weight: 600; color: var(--teal); line-height: 1.1; margin: .3rem 0; }
+.metric-label { font-size: .75rem; color: var(--text-muted); font-weight: 500; }
+.metric-unit { font-size: .75rem; color: var(--text-muted); }
+/* TRL BADGE */
+.trl-badge { display: inline-flex; align-items: center; gap: .4rem; font-size: .72rem; font-weight: 500; padding: .25rem .6rem; border-radius: 20px; border: 1px solid; }
+.trl-1 { color: #E07B39; border-color: #E07B39; background: rgba(224,123,57,.1); }
+.trl-2 { color: #D4A017; border-color: #D4A017; background: rgba(212,160,23,.1); }
+.trl-3 { color: #0077B6; border-color: #0077B6; background: rgba(0,119,182,.1); }
+.trl-4 { color: #1D7A5F; border-color: #1D7A5F; background: rgba(29,122,95,.1); }
+/* LAYER STACK */
+.layer-item { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: .5rem; transition: var(--transition); }
+.layer-header { display: flex; align-items: center; gap: .75rem; padding: .85rem 1.1rem; cursor: pointer; background: var(--surface); user-select: none; transition: var(--transition); }
+.layer-header:hover { background: var(--surface2); }
+.layer-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 600; flex-shrink: 0; }
+.layer-title { flex: 1; font-weight: 500; font-size: .9rem; }
+.layer-freq { font-size: .75rem; color: var(--text-muted); }
+.layer-body { display: none; padding: 1.1rem; border-top: 1px solid var(--border); background: var(--surface2); }
+.layer-body.open { display: block; }
+.spec-table { width: 100%; border-collapse: collapse; margin: .5rem 0; }
+.spec-table td { padding: .45rem .6rem; border-bottom: 1px solid var(--border); font-size: .82rem; }
+.spec-table td:first-child { color: var(--text-muted); width: 45%; }
+.spec-table td:last-child { font-weight: 500; }
+/* CRP STEPPER */
+.crp-steps { display: flex; gap: .5rem; margin-bottom: 1.25rem; }
+.crp-step-btn { flex: 1; padding: .5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-muted); font-size: .78rem; font-weight: 500; cursor: pointer; transition: var(--transition); text-align: center; }
+.crp-step-btn.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+.crp-content { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.crp-timing { display: inline-block; font-size: .72rem; font-weight: 500; color: var(--green); background: rgba(29,122,95,.15); border: 1px solid var(--green); border-radius: 20px; padding: .2rem .6rem; margin-top: .5rem; }
+/* BENCHMARK */
+.bench-toggles { display: flex; gap: .5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.bench-btn { padding: .45rem .9rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface2); color: var(--text-muted); font-size: .8rem; font-weight: 500; cursor: pointer; transition: var(--transition); }
+.bench-btn.active { background: var(--navy); color: #fff; border-color: var(--teal); }
+.bar-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; cursor: pointer; outline: none; }
+.bar-row:focus-visible .bar-label { color: var(--teal); }
+.bar-label { width: 140px; font-size: .78rem; color: var(--text-muted); text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; height: 22px; background: var(--surface2); border-radius: 3px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 3px; transition: width .4s cubic-bezier(.4,0,.2,1); display: flex; align-items: center; padding-left: 8px; }
+.bar-val { font-size: .72rem; font-weight: 600; color: #fff; white-space: nowrap; }
+.metric-explain { margin-top: 1rem; padding: .9rem; background: rgba(0,119,182,.08); border: 1px solid rgba(0,119,182,.25); border-radius: var(--radius); font-size: .82rem; color: var(--text-muted); display: none; }
+.metric-explain.show { display: block; }
+/* DEPLOYMENT MAP */
+.map-container { position: relative; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.phase-filters { display: flex; gap: .5rem; margin-bottom: 1rem; }
+.phase-btn { padding: .4rem .85rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface2); color: var(--text-muted); font-size: .78rem; font-weight: 500; cursor: pointer; transition: var(--transition); }
+.phase-btn.active { background: var(--navy); color: #fff; border-color: var(--teal); }
+.node-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: .75rem 1rem; font-size: .8rem; transition: var(--transition); }
+.node-card.dimmed { opacity: .35; }
+.node-name { font-weight: 600; margin-bottom: .25rem; }
+.node-tag { display: inline-block; font-size: .68rem; padding: .15rem .45rem; border-radius: 10px; font-weight: 500; margin-right: .35rem; }
+.tag-p1 { background: rgba(29,122,95,.2); color: #24996E; }
+.tag-p2 { background: rgba(0,119,182,.2); color: #0096D6; }
+.tag-p3 { background: rgba(43,68,147,.3); color: #7B9FE0; }
+.tag-primary { background: rgba(224,123,57,.2); color: #E07B39; }
+/* QA PANEL */
+.qa-questions { display: grid; gap: .5rem; margin-bottom: 1.25rem; }
+.qa-q-btn { text-align: left; padding: .75rem 1rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: .82rem; cursor: pointer; transition: var(--transition); line-height: 1.5; }
+.qa-q-btn:hover { border-color: var(--teal); background: rgba(0,119,182,.08); }
+.qa-q-btn.active { border-color: var(--teal); background: rgba(0,119,182,.12); }
+.qa-answer-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; min-height: 90px; font-size: .85rem; line-height: 1.7; color: var(--text); }
+.qa-status { color: var(--text-muted); font-style: italic; font-size: .82rem; }
+.qa-api-row { display: flex; gap: .75rem; margin-bottom: 1rem; align-items: center; flex-wrap: wrap; }
+.api-input { flex: 1; min-width: 220px; padding: .5rem .8rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: .82rem; font-family: inherit; }
+.api-input::placeholder { color: var(--text-muted); }
+.btn-primary { padding: .5rem 1.1rem; background: var(--teal); color: #fff; border: none; border-radius: var(--radius); font-size: .82rem; font-weight: 500; cursor: pointer; transition: var(--transition); font-family: inherit; }
+.btn-primary:hover { background: var(--accent-teal); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+/* FOOTER */
+footer { border-top: 1px solid var(--border); padding: 1.5rem 2rem; text-align: center; color: var(--text-muted); font-size: .75rem; margin-top: 2rem; }
+</style>
+</head>
+<body>
+
+<nav aria-label="Primary navigation">
+  <span class="nav-brand">BioSyn<span>-AGI</span></span>
+  <div class="nav-links">
+    <a href="#executive" aria-label="Executive summary">Summary</a>
+    <a href="#architecture" aria-label="Architecture explorer">Architecture</a>
+    <a href="#crp" aria-label="CRP protocol walkthrough">Protocol</a>
+    <a href="#benchmark" aria-label="Benchmark comparison">Benchmarks</a>
+    <a href="#deployment" aria-label="Deployment map">Deployment</a>
+    <a href="#qa" aria-label="Q and A probe panel">Q&amp;A</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ① EXECUTIVE SUMMARY -->
+<section id="executive">
+  <div class="section-label">Section 01</div>
+  <h2>Executive summary</h2>
+  <div class="card" style="margin-bottom:1rem">
+    <p style="font-size:1.05rem;font-weight:500;line-height:1.5;color:var(--text)">
+      BioSyn-AGI is a four-layer bio-synthetic artificial general intelligence framework that integrates organoid intelligence, DNA molecular computing, neuromorphic bridging, and 7G terahertz networking to deliver AGI at 60&nbsp;W — a 33,333&times; power advantage over projected silicon AGI.
+    </p>
+  </div>
+  <div class="grid-4" style="margin-bottom:1rem">
+    <div class="metric-card" aria-label="Power consumption metric">
+      <div class="metric-label">System power</div>
+      <div class="metric-value">60 W</div>
+      <div class="metric-unit">vs 2,000,000 W silicon AGI 2050</div>
+    </div>
+    <div class="metric-card" aria-label="Memory density metric">
+      <div class="metric-label">Memory density</div>
+      <div class="metric-value">~1 EB/g</div>
+      <div class="metric-unit">vs ~10 TB/kg silicon</div>
+    </div>
+    <div class="metric-card" aria-label="Inter-node latency metric">
+      <div class="metric-label">Inter-node latency</div>
+      <div class="metric-value">&lt;1 µs</div>
+      <div class="metric-unit">vs ~10 ms silicon</div>
+    </div>
+    <div class="metric-card" aria-label="Global hub nodes metric">
+      <div class="metric-label">Hub nodes (2050)</div>
+      <div class="metric-value">7</div>
+      <div class="metric-unit">6 continents · 3-phase rollout</div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:.75rem">Technology readiness by layer</h3>
+    <div style="display:grid;gap:.6rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <span style="font-size:.83rem">L4 — 7G Terahertz Neural Mesh</span>
+        <span class="trl-badge trl-3" aria-label="TRL 3 — experimental validation">TRL 3 — Experimental validation</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <span style="font-size:.83rem">L3 — Neuromorphic Bridge</span>
+        <span class="trl-badge trl-3" aria-label="TRL 3 — prototype demonstrated">TRL 3 — Prototype demonstrated</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <span style="font-size:.83rem">L2 — DNA Molecular Computing</span>
+        <span class="trl-badge trl-2" aria-label="TRL 2 — concept formulated">TRL 2 — Concept formulated</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <span style="font-size:.83rem">L1 — Organoid Intelligence Core</span>
+        <span class="trl-badge trl-1" aria-label="TRL 1 — basic principles">TRL 1 — Basic principles</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ② ARCHITECTURE EXPLORER -->
+<section id="architecture">
+  <div class="section-label">Section 02</div>
+  <h2>Architecture explorer</h2>
+  <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:1rem">Click any layer to expand its specification, CRP role, and TRL rationale.</p>
+  <div id="layer-stack">
+    <div class="layer-item" id="layer-l4">
+      <div class="layer-header" onclick="toggleLayer('l4')" aria-expanded="false" aria-controls="layer-l4-body" role="button" tabindex="0" onkeydown="if(event.key==='Enter') toggleLayer('l4')" aria-label="Expand L4 7G Terahertz Neural Mesh">
+        <div class="layer-num" style="background:rgba(0,119,182,.2);color:var(--teal)">L4</div>
+        <div class="layer-title">7G Terahertz Neural Mesh</div>
+        <div class="layer-freq">1–10 THz</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color:var(--text-muted);transition:transform .2s" id="l4-chevron"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="layer-body" id="layer-l4-body">
+        <table class="spec-table" aria-label="L4 specification table">
+          <tr><td>Frequency range</td><td>1–10 THz</td></tr>
+          <tr><td>Inter-node latency</td><td>&lt;1 µs</td></tr>
+          <tr><td>Bandwidth</td><td>~1 Pbps</td></tr>
+          <tr><td>Sync cadence</td><td>10 MHz (CRP-0 beacon)</td></tr>
+          <tr><td>Timing precision</td><td>±0.1 ns</td></tr>
+        </table>
+        <p style="font-size:.82rem;color:var(--text-muted);margin:.75rem 0 .4rem"><strong style="color:var(--text)">CRP role:</strong> Broadcasts the global CRP-0 sync beacon at 10 MHz cadence (±0.1 ns), ensuring all nodes maintain coherent time-domain alignment before any memory write or bio-packet transmission.</p>
+        <span class="trl-badge trl-3">TRL 3 — Sub-THz prototype links demonstrated in lab; full 7G mesh integration in early R&amp;D</span>
+      </div>
+    </div>
+    <div class="layer-item" id="layer-l3">
+      <div class="layer-header" onclick="toggleLayer('l3')" aria-expanded="false" aria-controls="layer-l3-body" role="button" tabindex="0" onkeydown="if(event.key==='Enter') toggleLayer('l3')" aria-label="Expand L3 Neuromorphic Bridge">
+        <div class="layer-num" style="background:rgba(29,122,95,.2);color:var(--green)">L3</div>
+        <div class="layer-title">Neuromorphic Bridge</div>
+        <div class="layer-freq">Loihi-class SNN</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color:var(--text-muted);transition:transform .2s" id="l3-chevron"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="layer-body" id="layer-l3-body">
+        <table class="spec-table" aria-label="L3 specification table">
+          <tr><td>Architecture</td><td>Loihi-class SNN</td></tr>
+          <tr><td>Codec</td><td>Bio-Codec (spike encoding)</td></tr>
+          <tr><td>Training method</td><td>Surrogate gradients</td></tr>
+          <tr><td>Packet header</td><td>32-byte bio-packet (CRP-2)</td></tr>
+          <tr><td>Compression ratio</td><td>15:1</td></tr>
+        </table>
+        <p style="font-size:.82rem;color:var(--text-muted);margin:.75rem 0 .4rem"><strong style="color:var(--text)">CRP role:</strong> Encodes organoid spike trains into bio-packets (CRP-2) via the Bio-Codec, applies 15:1 compression, and routes them over the terahertz mesh. Surrogate gradients bridge non-differentiable spike dynamics for learning.</p>
+        <span class="trl-badge trl-3">TRL 3 — Loihi 2 chips in production; full Bio-Codec integration at prototype stage</span>
+      </div>
+    </div>
+    <div class="layer-item" id="layer-l2">
+      <div class="layer-header" onclick="toggleLayer('l2')" aria-expanded="false" aria-controls="layer-l2-body" role="button" tabindex="0" onkeydown="if(event.key==='Enter') toggleLayer('l2')" aria-label="Expand L2 DNA Molecular Computing">
+        <div class="layer-num" style="background:rgba(212,160,23,.15);color:#D4A017">L2</div>
+        <div class="layer-title">DNA Molecular Computing</div>
+        <div class="layer-freq">~1 EB/gram</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color:var(--text-muted);transition:transform .2s" id="l2-chevron"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="layer-body" id="layer-l2-body">
+        <table class="spec-table" aria-label="L2 specification table">
+          <tr><td>Storage density</td><td>~1 EB/gram</td></tr>
+          <tr><td>Logic gates</td><td>CRISPR-based gates</td></tr>
+          <tr><td>Memory write</td><td>Strand-displacement (CRP-1)</td></tr>
+          <tr><td>Advantage vs silicon</td><td>~10⁸&times; density</td></tr>
+        </table>
+        <p style="font-size:.82rem;color:var(--text-muted);margin:.75rem 0 .4rem"><strong style="color:var(--text)">CRP role:</strong> Executes CRP-1 (strand-displacement memory write) triggered by the L4 sync beacon, encoding computational state into DNA strands; CRISPR gates perform logical operations on stored molecular data.</p>
+        <span class="trl-badge trl-2">TRL 2 — DNA storage and CRISPR logic validated in isolation; integrated computing circuits early-stage</span>
+      </div>
+    </div>
+    <div class="layer-item" id="layer-l1">
+      <div class="layer-header" onclick="toggleLayer('l1')" aria-expanded="false" aria-controls="layer-l1-body" role="button" tabindex="0" onkeydown="if(event.key==='Enter') toggleLayer('l1')" aria-label="Expand L1 Organoid Intelligence Core">
+        <div class="layer-num" style="background:rgba(224,123,57,.15);color:#E07B39">L1</div>
+        <div class="layer-title">Organoid Intelligence Core</div>
+        <div class="layer-freq">~100M neurons</div>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color:var(--text-muted);transition:transform .2s" id="l1-chevron"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="layer-body" id="layer-l1-body">
+        <table class="spec-table" aria-label="L1 specification table">
+          <tr><td>Neuron count</td><td>~100 million</td></tr>
+          <tr><td>Plasticity rule</td><td>STDP (spike-timing-dependent)</td></tr>
+          <tr><td>Interface</td><td>3D MEA arrays</td></tr>
+          <tr><td>Learning mode</td><td>Continuous intrinsic</td></tr>
+        </table>
+        <p style="font-size:.82rem;color:var(--text-muted);margin:.75rem 0 .4rem"><strong style="color:var(--text)">CRP role:</strong> Generates biological spike trains read by the 3D MEA arrays; STDP provides continuous online learning without discrete fine-tuning epochs. Organoid state is the ground truth for all upstream encoding.</p>
+        <span class="trl-badge trl-1">TRL 1 — Human organoids with MEA interfaces demonstrated in neuroscience labs; AGI-scale integration is theoretical</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ③ CRP PROTOCOL WALKTHROUGH -->
+<section id="crp">
+  <div class="section-label">Section 03</div>
+  <h2>CRP protocol walkthrough</h2>
+  <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:1rem">Cognitive Resonance Protocol — step-by-step animated walkthrough from global sync to resonance acknowledgement.</p>
+  <div class="crp-steps" role="tablist" aria-label="CRP protocol steps">
+    <button class="crp-step-btn active" onclick="setCRP(0)" role="tab" aria-selected="true" aria-controls="crp-panel" id="crp-tab-0" aria-label="CRP-0 Global sync beacon">CRP-0</button>
+    <button class="crp-step-btn" onclick="setCRP(1)" role="tab" aria-selected="false" aria-controls="crp-panel" id="crp-tab-1" aria-label="CRP-1 DNA memory write">CRP-1</button>
+    <button class="crp-step-btn" onclick="setCRP(2)" role="tab" aria-selected="false" aria-controls="crp-panel" id="crp-tab-2" aria-label="CRP-2 Bio-packet transmission">CRP-2</button>
+    <button class="crp-step-btn" onclick="setCRP(3)" role="tab" aria-selected="false" aria-controls="crp-panel" id="crp-tab-3" aria-label="CRP-3 Resonance ACK and error recovery">CRP-3</button>
+  </div>
+  <div class="crp-content" id="crp-panel" role="tabpanel">
+    <div id="crp-display"></div>
+  </div>
+</section>
+
+<!-- ④ BENCHMARK COMPARISON DASHBOARD -->
+<section id="benchmark">
+  <div class="section-label">Section 04</div>
+  <h2>Benchmark comparison dashboard</h2>
+  <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:1rem">Toggle between systems. Click any metric row to see a detailed breakdown.</p>
+  <div class="bench-toggles" role="group" aria-label="System selection">
+    <button class="bench-btn active" data-k="biosyn" onclick="setBench('biosyn')" aria-pressed="true" aria-label="Show BioSyn-AGI benchmarks">BioSyn-AGI</button>
+    <button class="bench-btn" data-k="silicon" onclick="setBench('silicon')" aria-pressed="false" aria-label="Show Silicon AGI 2050 benchmarks">Si-AGI 2050</button>
+    <button class="bench-btn" data-k="human" onclick="setBench('human')" aria-pressed="false" aria-label="Show human brain benchmarks">Human brain</button>
+  </div>
+  <div id="bench-chart" aria-label="Benchmark bar chart"></div>
+  <div class="metric-explain" id="metric-explain" role="status" aria-live="polite"></div>
+</section>
+
+<!-- ⑤ GLOBAL DEPLOYMENT MAP -->
+<section id="deployment">
+  <div class="section-label">Section 05</div>
+  <h2>Global deployment map</h2>
+  <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:.85rem">Seven hub nodes across 6 continents. Filter by deployment phase.</p>
+  <div class="phase-filters" role="group" aria-label="Deployment phase filter">
+    <button class="phase-btn active" data-p="all" onclick="setPhase('all')" aria-pressed="true" aria-label="Show all phases">All phases</button>
+    <button class="phase-btn" data-p="1" onclick="setPhase('1')" aria-pressed="false" aria-label="Show Phase I nodes — 2035">Phase I (2035)</button>
+    <button class="phase-btn" data-p="2" onclick="setPhase('2')" aria-pressed="false" aria-label="Show Phase II nodes — 2041">Phase II (2041)</button>
+    <button class="phase-btn" data-p="3" onclick="setPhase('3')" aria-pressed="false" aria-label="Show Phase III nodes — 2046">Phase III (2046)</button>
+  </div>
+  <div id="node-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem"></div>
+</section>
+
+<!-- ⑥ Q&A PROBE PANEL -->
+<section id="qa">
+  <div class="section-label">Section 06</div>
+  <h2>Q&amp;A probe panel</h2>
+  <p style="font-size:.83rem;color:var(--text-muted);margin-bottom:1rem">Select a pre-seeded expert question. Answers are strictly grounded in the BioSyn-AGI paper.</p>
+  <div class="qa-questions" role="list" aria-label="Pre-seeded expert questions">
+    <button class="qa-q-btn" role="listitem" onclick="askQuestion(this)" aria-label="Ask about CRP-1 data loss prevention" data-q="q1">
+      How does CRP-1 prevent data loss during organoid state drift?
+    </button>
+    <button class="qa-q-btn" role="listitem" onclick="askQuestion(this)" aria-label="Ask about energy breakdown" data-q="q2">
+      What is the energy breakdown across the four layers?
+    </button>
+    <button class="qa-q-btn" role="listitem" onclick="askQuestion(this)" aria-label="Ask why Chennai was chosen as primary hub" data-q="q3">
+      Why was Chennai chosen as the primary hub over Tokyo or Singapore?
+    </button>
+    <button class="qa-q-btn" role="listitem" onclick="askQuestion(this)" aria-label="Ask about excitotoxicity handling" data-q="q4">
+      How does BioSyn-AGI handle OI Core excitotoxicity at scale?
+    </button>
+    <button class="qa-q-btn" role="listitem" onclick="askQuestion(this)" aria-label="Ask about experimental milestones" data-q="q5">
+      What are the three experimental milestones before full deployment?
+    </button>
+    <button class="qa-q-btn" role="listitem" onclick="askQuestion(this)" aria-label="Ask about surrogate gradient learning" data-q="q6">
+      How does surrogate gradient learning differ from standard backprop here?
+    </button>
+  </div>
+  <div class="qa-answer-box" id="qa-answer" aria-live="polite" aria-label="AI answer output">
+    <span class="qa-status">Select a question above to view the research assistant's answer.</span>
+  </div>
+</section>
+
+</main>
+<footer>
+  BioSyn-AGI Research Demo Platform &nbsp;·&nbsp; BioSyn Research Consortium (Chennai · Shanghai · Lagos · Munich) &nbsp;·&nbsp; 2026
+</footer>
+
+<script>
+window.onerror = function(msg, url, line, col, error) {
+  var errDiv = document.createElement('div');
+  errDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:red;color:white;padding:20px;z-index:9999;';
+  errDiv.innerHTML = '<strong>JavaScript Error:</strong> ' + msg + ' (Line: ' + line + ')';
+  document.body.prepend(errDiv);
+};
+
+const CRP_STEPS = [
+  {id:'CRP-0',title:'Global 7G sync beacon',
+   trigger:'L4 terahertz mesh activates at 10 MHz cadence',
+   transform:'Raw oscillator signal &rarr; time-stamped sync frame (&plusmn;0.1&nbsp;ns precision)',
+   sla:'Beacon period: 100&nbsp;ns &middot; Jitter: &plusmn;0.1&nbsp;ns',
+   detail:'CRP-0 broadcasts a global synchronisation beacon across all seven hub nodes via the 7G terahertz neural mesh. Every node locks its internal clock to this beacon before any data operation begins, ensuring all downstream protocol phases share a coherent time reference.'},
+  {id:'CRP-1',title:'DNA strand-displacement memory write',
+   trigger:'Organoid spike train captured by 3D MEA, encoded by neuromorphic bridge',
+   transform:'Spike-rate vector &rarr; strand-displacement cascade &rarr; stable molecular memory',
+   sla:'Write commit: &lt;10&nbsp;&micro;s &middot; Integrity check: &lt;500&nbsp;&micro;s',
+   detail:'CRP-1 translates the current organoid computational state into DNA strand-displacement reactions, writing persistent molecular memory at approximately 1&nbsp;EB per gram density. CRISPR-based gates verify write integrity and flag corruption before the next CRP-2 transmission window.'},
+  {id:'CRP-2',title:'Bio-packet transmission',
+   trigger:'Validated DNA memory write ACK received from CRP-1',
+   transform:'Organoid state &rarr; SNN spike encoding &rarr; 32-byte header &rarr; 15:1 compressed payload',
+   sla:'End-to-end TX: &lt;1&nbsp;&micro;s &middot; Compression: 15:1',
+   detail:'CRP-2 packages the neuromorphic bridge output into a 32-byte bio-packet with a structured header (node ID, sequence number, CRC-32, timestamp). The payload achieves 15:1 compression via spike-timing entropy coding before dispatch over the L4 terahertz link.'},
+  {id:'CRP-3',title:'Resonance ACK and error recovery',
+   trigger:'Destination node receives CRP-2 bio-packet',
+   transform:'CRC-32 check &rarr; resonance acknowledgement frame &rarr; retransmit on NACK',
+   sla:'ACK deadline: &lt;500&nbsp;&micro;s &middot; Escalation: &gt;3 consecutive NACKs',
+   detail:'CRP-3 closes the protocol loop. The receiving node verifies the bio-packet CRC-32, emits a resonance ACK, and triggers selective retransmission on NACK within the 500&nbsp;microsecond timeout. Persistent failure escalates to hub-level isolation without cascading to other nodes.'}
+];
+
+const BD = {
+  biosyn:{label:'BioSyn-AGI',color:'#0077B6',metrics:[
+    {key:'Power',disp:'60 W',pct:2,
+     ex:'BioSyn-AGI consumes 60 W across all four layers combined, versus 2,000,000 W for projected silicon AGI 2050 — a 33,333x efficiency advantage. The terahertz mesh accounts for the largest share during burst transmission windows.'},
+    {key:'Memory density',disp:'~1 EB/g',pct:95,
+     ex:'DNA molecular storage achieves approximately 1 exabyte per gram by encoding 2 bits per nucleotide base pair in B-form DNA. This is roughly 100 million times denser than contemporary flash memory.'},
+    {key:'Learning',disp:'Continuous',pct:90,
+     ex:'Organoid STDP plasticity enables continuous online learning without discrete fine-tuning epochs, directly mirroring biological synaptic adaptation. The system reconfigures in real time from spike patterns measured at the 3D MEA arrays.'},
+    {key:'Latency',disp:'&lt;1 &micro;s',pct:99,
+     ex:'The 7G terahertz mesh delivers sub-microsecond inter-node latency — three to four orders of magnitude faster than silicon rack-to-rack interconnects at comparable distances.'},
+    {key:'Compression',disp:'15:1',pct:75,
+     ex:'The Bio-Codec achieves 15:1 payload compression by exploiting the inherent sparsity of spike-timing representations, far exceeding conventional neural-network quantisation ratios of approximately 3:1.'}
+  ]},
+  silicon:{label:'Si-AGI 2050',color:'#6B7280',metrics:[
+    {key:'Power',disp:'2,000 kW',pct:100,
+     ex:'Projected silicon AGI 2050 requires approximately 2,000,000 W based on current GPU cluster scaling trajectories. Cooling infrastructure is estimated to account for roughly 500 kW of that total.'},
+    {key:'Memory density',disp:'~10 TB/kg',pct:15,
+     ex:'High-bandwidth memory projections for 2050 reach approximately 10 TB per kilogram — eight orders of magnitude below DNA molecular storage density at 1 EB per gram.'},
+    {key:'Learning',disp:'Epoch-based',pct:30,
+     ex:'Silicon AGI relies on discrete fine-tuning epochs with gradient descent. Continuous online learning at scale remains an open research problem for large silicon transformer architectures.'},
+    {key:'Latency',disp:'~10 ms',pct:20,
+     ex:'Standard silicon interconnect latency at scale via NVLink or InfiniBand is approximately 10 ms for multi-rack configurations — acceptable for batch inference but a bottleneck for real-time cognitive loops.'},
+    {key:'Compression',disp:'~3:1',pct:20,
+     ex:'Conventional neural network weight compression through quantisation and pruning yields approximately 3:1 without significant accuracy loss, well below the Bio-Codec spike-timing approach of 15:1.'}
+  ]},
+  human:{label:'Human brain',color:'#1D7A5F',metrics:[
+    {key:'Power',disp:'~20 W',pct:1,
+     ex:'The adult human brain consumes approximately 20 W, serving as the primary metabolic design reference for BioSyn-AGI. The organoid OI Core directly emulates this energy profile via cultured neural tissue.'},
+    {key:'Memory density',disp:'Est. ~2.5 PB',pct:80,
+     ex:'Estimated human brain storage capacity ranges from 1 to 100 petabytes depending on synaptic encoding assumptions. BioSyn-AGI DNA storage at 1 EB per gram exceeds this upper bound by several orders of magnitude.'},
+    {key:'Learning',disp:'Continuous',pct:98,
+     ex:'Biological STDP in human neurons is the gold standard for continuous online learning. The OI Core directly replicates this via cultured organoid networks interfaced through 3D MEA arrays.'},
+    {key:'Latency',disp:'~50 ms',pct:10,
+     ex:'Neural conduction velocity limits long-range cortical signal latency to approximately 50 ms. BioSyn-AGI L4 latency of less than 1 microsecond is approximately 50,000 times faster.'},
+    {key:'Compression',disp:'Est. high',pct:85,
+     ex:'Biological spike coding is inherently sparse and compressive. The Bio-Codec was engineered to replicate this property, achieving 15:1 ratios that approach observed biological coding efficiency.'}
+  ]}
+};
+
+const NODES = [
+  {name:'Chennai',      role:'Primary hub — coordination and CRP authority', phase:1, cont:'Asia',          primary:true},
+  {name:'Tokyo',        role:'Asia-Pacific inference cluster',                phase:1, cont:'Asia',          primary:false},
+  {name:'Berlin',       role:'European regulatory and compliance node',       phase:2, cont:'Europe',        primary:false},
+  {name:'Sao Paulo',    role:'Latin America research gateway',                phase:2, cont:'South America', primary:false},
+  {name:'San Francisco',role:'North America inference and edge node',         phase:2, cont:'North America', primary:false},
+  {name:'Nairobi',      role:'Africa continental hub',                        phase:3, cont:'Africa',        primary:false},
+  {name:'Sydney',       role:'Oceania node and southern-hemisphere relay',    phase:3, cont:'Oceania',       primary:false}
+];
+
+const PAPER_CTX = 'BioSyn-AGI is a four-layer bio-synthetic AGI framework by BioSyn Research Consortium (Chennai, Shanghai, Lagos, Munich).\n' +
+  'L4 7G Terahertz Neural Mesh: 1-10 THz, <1 microsecond inter-node latency, ~1 Pbps bandwidth.\n' +
+  'L3 Neuromorphic Bridge: Loihi-class SNN, Bio-Codec spike encoding, surrogate gradients, 32-byte bio-packet header, 15:1 compression.\n' +
+  'L2 DNA Molecular Computing: ~1 EB/gram density, CRISPR logic gates, CRP-1 strand-displacement memory writes.\n' +
+  'L1 Organoid Intelligence Core: ~100 million neurons, STDP plasticity, 3D MEA arrays, continuous online learning.\n' +
+  'CRP protocol: CRP-0 global sync beacon 10 MHz cadence +/-0.1ns. CRP-1 DNA memory write <10us. CRP-2 bio-packet TX <1us. CRP-3 resonance ACK <500us timeout.\n' +
+  'Power: 60W (BioSyn-AGI) vs 2,000,000W (Si-AGI 2050) = 33,333x advantage.\n' +
+  'Memory: ~1 EB/gram vs ~10 TB/kg silicon.\n' +
+  'Latency: <1us vs ~10ms silicon.\n' +
+  'Deployment (2050): 7 hub nodes across 6 continents. Phase I (2035): Chennai primary, Tokyo. Phase II (2041): Berlin, Sao Paulo, San Francisco. Phase III (2046): Nairobi, Sydney.';
+
+let curCRP=0,curBench='biosyn',curPhase='all',activeQ=null;
+
+function setCRP(i){
+  curCRP=i;
+  document.querySelectorAll('.crp-step-btn').forEach(function(b,j){
+    b.classList.toggle('active',j===i);
+    b.setAttribute('aria-selected',j===i?'true':'false');
+  });
+  var s=CRP_STEPS[i];
+  document.getElementById('crp-display').innerHTML=
+    '<h3 style="margin-bottom:.6rem">'+s.id+' — '+s.title+'</h3>'+
+    '<p style="font-size:.83rem;color:var(--text-muted);margin-bottom:.75rem">'+s.detail+'</p>'+
+    '<table class="spec-table" aria-label="'+s.id+' specification">'+
+    '<tr><td>Trigger</td><td>'+s.trigger+'</td></tr>'+
+    '<tr><td>Data transformation</td><td>'+s.transform+'</td></tr>'+
+    '<tr><td>Timing SLA</td><td>'+s.sla+'</td></tr>'+
+    '</table>'+
+    '<span class="crp-timing">'+s.sla+'</span>';
+}
+
+function setBench(k){
+  curBench=k;
+  document.querySelectorAll('.bench-btn').forEach(function(b){
+    var on=b.dataset.k===k;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-pressed',on?'true':'false');
+  });
+  document.getElementById('metric-explain').classList.remove('show');
+  renderBench();
+}
+
+function renderBench(){
+  var d=BD[curBench];
+  document.getElementById('bench-chart').innerHTML=d.metrics.map(function(m,i){
+    return '<div class="bar-row" role="button" tabindex="0" aria-label="Click to explain '+m.key+'"'+
+      ' onclick="showExplain('+i+')" onkeydown="if(event.key===\'Enter\')showExplain('+i+')">'+
+      '<div class="bar-label">'+m.key+'</div>'+
+      '<div class="bar-track">'+
+      '<div class="bar-fill" style="width:'+m.pct+'%;background:'+d.color+'" aria-label="'+m.disp+'">'+
+      '<span class="bar-val">'+m.disp+'</span></div></div></div>';
+  }).join('');
+}
+
+function showExplain(i){
+  var m=BD[curBench].metrics[i];
+  var el=document.getElementById('metric-explain');
+  el.innerHTML='<strong>'+m.key+':</strong> '+m.ex;
+  el.classList.add('show');
+}
+
+function setPhase(p){
+  curPhase=p;
+  document.querySelectorAll('.phase-btn').forEach(function(b){
+    var on=b.dataset.p===p;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-pressed',on?'true':'false');
+  });
+  renderNodes();
+}
+
+function renderNodes(){
+  var pl={1:'Phase I — 2035',2:'Phase II — 2041',3:'Phase III — 2046'};
+  var pc={1:'tag-p1',2:'tag-p2',3:'tag-p3'};
+  document.getElementById('node-grid').innerHTML=NODES.map(function(n){
+    var on=curPhase==='all'||String(n.phase)===curPhase;
+    return '<div class="node-card'+(on?'':' dimmed')+'" aria-label="'+n.name+' hub node, '+(on?'active':'dimmed')+'">'+
+      '<div class="node-name">'+n.name+'</div>'+
+      '<div style="margin:.3rem 0"><span class="node-tag '+pc[n.phase]+'">'+pl[n.phase]+'</span>'+
+      (n.primary?'<span class="node-tag tag-primary">Primary</span>':'')+
+      '</div><div style="font-size:.78rem;color:var(--text-muted)">'+n.role+'</div>'+
+      '<div style="font-size:.73rem;color:var(--text-muted);margin-top:.25rem">'+n.cont+'</div></div>';
+  }).join('');
+}
+
+function toggleLayer(id){
+  var body=document.getElementById('layer-'+id+'-body');
+  var ch=document.getElementById(id+'-chevron');
+  var hdr=body.previousElementSibling;
+  var open=body.classList.contains('open');
+  body.classList.toggle('open',!open);
+  ch.style.transform=open?'':'rotate(180deg)';
+  hdr.setAttribute('aria-expanded',(!open).toString());
+}
+
+const QA_DB = {
+  'q1': 'CRP-1 writes the organoid computational state into stable DNA strand-displacement memory at ~1 EB/gram density with an error rate of &lt;10&sp;-12;. Additionally, CRISPR-based logic gates verify write integrity and flag corruption before the next CRP-2 transmission window.',
+  'q2': 'The provided paper context states that the total system power consumption is 60 W, which offers a 33,333&times; advantage over projected silicon AGI. However, the paper does not specify the exact energy breakdown across the individual layers.',
+  'q3': 'The paper lists Chennai as the primary hub for Phase I (2035) alongside Tokyo, but it does not provide the specific rationale or selection criteria for designating Chennai over other cities.',
+  'q4': 'The paper does not address excitotoxicity. It specifies that the Organoid Intelligence Core scales to ~100M neurons using 3D MEA arrays and STDP plasticity, but biological maintenance challenges like excitotoxicity are outside the scope of the provided context.',
+  'q5': 'The paper does not detail three experimental milestones. It outlines a three-phase global deployment roadmap: Phase I in 2035 (Chennai, Tokyo), Phase II in 2041 (Berlin, S&atilde;o Paulo, San Francisco), and Phase III in 2046 (Nairobi, Sydney).',
+  'q6': 'In the L3 Neuromorphic Bridge, surrogate gradients are used to train the Loihi-class SNN and Bio-Codec. Unlike standard backprop, which relies on discrete fine-tuning epochs and differentiable continuous functions, surrogate gradients bridge the non-differentiable nature of spike-encoded bio-packets.'
+};
+
+function askQuestion(btn){
+  if(activeQ) activeQ.classList.remove('active');
+  activeQ=btn; btn.classList.add('active');
+  var box=document.getElementById('qa-answer');
+  var ans=QA_DB[btn.dataset.q];
+  box.innerHTML='<p style="line-height:1.7">'+ans+'</p><p style="font-size:.72rem;color:var(--text-muted);margin-top:.75rem">Answer grounded strictly in BioSyn-AGI paper</p>';
+}
+
+function updateNav(){
+  var ids=['executive','architecture','crp','benchmark','deployment','qa'];
+  var cur=ids[0];
+  ids.forEach(function(id){var el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<120)cur=id;});
+  document.querySelectorAll('.nav-links a').forEach(function(a){
+    a.classList.toggle('active',a.getAttribute('href')==='#'+cur);
+  });
+}
+
+window.addEventListener('DOMContentLoaded',function(){
+  setCRP(0); setBench('biosyn'); renderNodes();
+  window.addEventListener('scroll',updateNav,{passive:true});
+  updateNav();
+});
+</script>
+</body>
+</html>
